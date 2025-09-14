@@ -1,233 +1,223 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مبدل لینک یوتیوب برای همه دستگاه‌ها</title>
-    
-    <!-- Tailwind CSS for a modern, responsive design -->
+    <title>YouTube Link Opener</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts: Inter for a clean, modern typeface -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Custom CSS for further enhancements -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
-        /* Applying the Inter font and setting a smooth font-smoothing */
         body {
             font-family: 'Inter', sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
-
-        /* Styling for the input placeholder to match the RTL direction */
-        ::placeholder {
-            text-align: right;
+        .gradient-text {
+            background: linear-gradient(90deg, #4f46e5, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-
-        /* Custom transition for a smoother visual feedback */
-        .transition-all-smooth {
-            transition: all 0.3s ease-in-out;
+        .gradient-border-button {
+            background-image: linear-gradient(to right, #4338ca, #be185d), linear-gradient(to right, #4338ca, #be185d);
+            background-size: 100% 2px, 100% 2px;
+            background-position: 0 100%, 0 0;
+            background-repeat: no-repeat;
+            transition: all 0.3s;
+        }
+        .gradient-border-button:hover {
+            background-size: 0 2px, 100% 2px;
         }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 flex items-center justify-center min-h-screen transition-all-smooth py-8">
+<body class="bg-gray-900 text-gray-200 antialiased">
 
-    <div class="w-full max-w-md mx-auto p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8 transition-all-smooth">
-            
-            <!-- Header section with YouTube logo -->
-            <div class="text-center mb-6">
-                <div class="flex justify-center items-center gap-3">
-                    <!-- YouTube SVG Icon -->
-                    <svg class="w-12 h-12 text-red-500" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M21.582,6.186c-0.23-0.86-0.908-1.538-1.768-1.768C18.254,4,12,4,12,4S5.746,4,4.186,4.418 c-0.86,0.23-1.538,0.908-1.768,1.768C2,7.746,2,12,2,12s0,4.254,0.418,5.814c0.23,0.86,0.908,1.538,1.768,1.768 C5.746,20,12,20,12,20s6.254,0,7.814-0.418c0.861-0.23,1.538-0.908,1.768-1.768C22,16.254,22,12,22,12S22,7.746,21.582,6.186z M10,15.464V8.536L16,12L10,15.464z"/>
-                    </svg>
-                    <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">مبدل لینک یوتیوب</h1>
-                </div>
-                <p class="text-gray-500 dark:text-gray-400 mt-3">لینک یوتیوب را به لینک عمومی برای اینستاگرام یا لینک مستقیم برای اپلیکیشن تبدیل کنید.</p>
-            </div>
+    <!-- Redirect Logic: This script checks if the page was loaded with a video ID and redirects. -->
+    <script>
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            const videoId = params.get('v');
+            const channelId = params.get('c');
+            const playlistId = params.get('p');
 
-            <!-- Input Form -->
-            <div class="space-y-4">
-                <div class="relative">
-                    <input type="url" id="youtubeLink" placeholder="...لینک یوتیوب را اینجا بچسبانید" class="w-full px-4 py-3 pr-12 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-2 border-transparent focus:border-red-500 focus:ring-0 rounded-xl outline-none transition-all-smooth text-left" dir="ltr">
-                    <button id="pasteButton" class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-red-500 transition-all-smooth" title="چسباندن از کلیپ‌بورد">
-                        <!-- Paste Icon -->
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7v4m-2-2h4"></path></svg>
+            if (videoId) {
+                // Attempt to open in app first, fallback to web
+                 window.location.href = `https://www.youtube.com/watch?v=${videoId}`;
+            } else if (channelId) {
+                 window.location.href = `https://www.youtube.com/channel/${channelId}`;
+            } else if (playlistId) {
+                 window.location.href = `https://www.youtube.com/playlist?list=${playlistId}`;
+            }
+        })();
+    </script>
+
+    <div class="container mx-auto px-4 py-8 md:py-16">
+
+        <!-- Header -->
+        <header class="text-center mb-12 md:mb-20">
+            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-4">
+                Make YouTube Links <span class="gradient-text">Open in the App</span>
+            </h1>
+            <p class="text-lg md:text-xl text-gray-400 max-w-3xl mx-auto">
+                Stop losing engagement. Convert your YouTube links to open directly in the app, where viewers are logged in and ready to like, comment, and subscribe.
+            </p>
+        </header>
+
+        <!-- Link Generator -->
+        <main class="max-w-2xl mx-auto bg-gray-800/50 rounded-2xl p-6 md:p-8 border border-gray-700 shadow-2xl shadow-indigo-500/10">
+            <form id="link-form">
+                <label for="youtube-url" class="block text-sm font-medium text-gray-300 mb-2">Paste your YouTube Video, Channel, or Playlist URL</label>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <input type="url" id="youtube-url" name="youtube-url" required placeholder="https://www.youtube.com/watch?v=..." class="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors whitespace-nowrap">
+                        Create Link
                     </button>
                 </div>
-                <button id="convertButton" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-xl transition-all-smooth focus:outline-none focus:ring-4 focus:ring-red-300 dark:focus:ring-red-800">
-                    تبدیل لینک
-                </button>
-            </div>
+            </form>
 
-            <!-- Result and Messaging Area -->
-            <div id="messageArea" class="mt-6 min-h-[80px]">
-                <!-- Dynamic content will be injected here -->
+            <!-- Result Display -->
+            <div id="result" class="mt-6 hidden">
+                <label for="generated-url" class="block text-sm font-medium text-gray-300 mb-2">Your new link:</label>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <input type="text" id="generated-url" readonly class="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg text-green-400 font-mono">
+                    <button id="copy-button" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors whitespace-nowrap">
+                        Copy
+                    </button>
+                </div>
             </div>
+            
+            <!-- Error Message -->
+            <div id="error-message" class="mt-4 text-red-400 text-center hidden">
+                Invalid YouTube URL. Please check and try again.
+            </div>
+        </main>
 
-        </div>
+        <!-- How it works -->
+        <section class="mt-20 md:mt-28 text-center">
+            <h2 class="text-3xl font-bold mb-10">How It Works</h2>
+            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <div class="bg-gray-800/30 p-6 rounded-xl border border-gray-700">
+                    <div class="text-indigo-400 text-4xl font-black mb-4">1</div>
+                    <h3 class="text-xl font-semibold mb-2">Paste Your Link</h3>
+                    <p class="text-gray-400">Copy any YouTube video, channel, or playlist URL and paste it above.</p>
+                </div>
+                <div class="bg-gray-800/30 p-6 rounded-xl border border-gray-700">
+                    <div class="text-indigo-400 text-4xl font-black mb-4">2</div>
+                    <h3 class="text-xl font-semibold mb-2">Get Your New URL</h3>
+                    <p class="text-gray-400">We generate a special URL that contains the logic to open the YouTube app.</p>
+                </div>
+                <div class="bg-gray-800/30 p-6 rounded-xl border border-gray-700">
+                    <div class="text-indigo-400 text-4xl font-black mb-4">3</div>
+                    <h3 class="text-xl font-semibold mb-2">Share & Engage</h3>
+                    <p class="text-gray-400">Use this new link on Instagram, Facebook, etc., and watch your engagement grow.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Problem vs Solution -->
+        <section class="mt-20 md:mt-28 max-w-5xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-10">The Problem You're Solving</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-red-900/20 border border-red-700/50 p-6 rounded-xl">
+                    <h3 class="text-2xl font-bold mb-4">Regular Links</h3>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-start"><span class="text-red-400 mr-3 mt-1">❌</span> Opens in a slow in-app browser.</li>
+                        <li class="flex items-start"><span class="text-red-400 mr-3 mt-1">❌</span> Viewers are not logged in.</li>
+                        <li class="flex items-start"><span class="text-red-400 mr-3 mt-1">❌</span> Subscribing is a multi-step hassle.</li>
+                        <li class="flex items-start"><span class="text-red-400 mr-3 mt-1">❌</span> Lost engagement and watch time.</li>
+                    </ul>
+                </div>
+                <div class="bg-green-900/20 border border-green-700/50 p-6 rounded-xl">
+                    <h3 class="text-2xl font-bold mb-4">With This Tool</h3>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-start"><span class="text-green-400 mr-3 mt-1">✔️</span> Opens directly in the YouTube app.</li>
+                        <li class="flex items-start"><span class="text-green-400 mr-3 mt-1">✔️</span> Viewers are already logged in.</li>
+                        <li class="flex items-start"><span class="text-green-400 mr-3 mt-1">✔️</span> Easy one-tap subscribe and comment.</li>
+                        <li class="flex items-start"><span class="text-green-400 mr-3 mt-1">✔️</span> Increased engagement and subscribers.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center mt-20 md:mt-28 text-gray-500">
+             <p>Built for <a href="https://github.com/farzamify/InApp" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-400">Farzamify/InApp</a></p>
+        </footer>
+
     </div>
 
+    <!-- Main Logic Script -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- DOM Element Selection ---
-            const youtubeLinkInput = document.getElementById('youtubeLink');
-            const convertButton = document.getElementById('convertButton');
-            const pasteButton = document.getElementById('pasteButton');
-            const messageArea = document.getElementById('messageArea');
+            const form = document.getElementById('link-form');
+            const youtubeUrlInput = document.getElementById('youtube-url');
+            const resultDiv = document.getElementById('result');
+            const generatedUrlInput = document.getElementById('generated-url');
+            const copyButton = document.getElementById('copy-button');
+            const errorMessage = document.getElementById('error-message');
 
-            // --- Event Listeners ---
-            convertButton.addEventListener('click', handleConversion);
-            pasteButton.addEventListener('click', pasteFromClipboard);
-            youtubeLinkInput.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    handleConversion();
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const url = youtubeUrlInput.value.trim();
+                
+                // Regex to extract video, channel, or playlist ID from various YouTube URL formats
+                const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([^"&?\/ ]{11})|youtube\.com\/(?:channel\/|c\/)([^"&?\/ ]+)|youtube\.com\/playlist\?list=([^"&?\/ ]+)/;
+                const match = url.match(youtubeRegex);
+
+                if (match) {
+                    const videoId = match[1];
+                    const channelId = match[2];
+                    const playlistId = match[3];
+                    
+                    const baseUrl = window.location.origin + window.location.pathname;
+                    let newUrl = '';
+
+                    if (videoId) {
+                        newUrl = `${baseUrl}?v=${videoId}`;
+                    } else if (channelId) {
+                        newUrl = `${baseUrl}?c=${channelId}`;
+                    } else if (playlistId) {
+                        newUrl = `${baseUrl}?p=${playlistId}`;
+                    } else {
+                        showError();
+                        return;
+                    }
+
+                    generatedUrlInput.value = newUrl;
+                    resultDiv.classList.remove('hidden');
+                    errorMessage.classList.add('hidden');
+                    copyButton.textContent = 'Copy';
+                    copyButton.classList.remove('bg-green-600');
+                    copyButton.classList.add('bg-gray-600');
+
+                } else {
+                    showError();
                 }
             });
-
-            // --- Core Functions ---
-            function handleConversion() {
-                const youtubeLink = youtubeLinkInput.value.trim();
-                if (!youtubeLink) {
-                    displayMessage('error', 'لطفاً یک لینک یوتیوب وارد کنید.');
-                    return;
-                }
-                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
-                const match = youtubeLink.match(regExp);
-                if (match && match[2].length === 11) {
-                    const videoId = match[2];
-                    displayResult(videoId);
-                } else {
-                    displayMessage('error', 'لینک یوتیوب نامعتبر است. لطفاً دوباره تلاش کنید.');
-                }
-            }
-
-            async function pasteFromClipboard() {
-                try {
-                    const text = await navigator.clipboard.readText();
-                    youtubeLinkInput.value = text;
-                    youtubeLinkInput.focus();
-                } catch (err) {
-                    console.error('Failed to read clipboard contents: ', err);
-                    displayMessage('error', 'امکان دسترسی به کلیپ‌بورد وجود ندارد.');
-                }
-            }
             
-            function copyToClipboard(textToCopy, buttonElement) {
-                const tempInput = document.createElement('textarea');
-                tempInput.value = textToCopy;
-                document.body.appendChild(tempInput);
-                tempInput.select();
+            function showError() {
+                resultDiv.classList.add('hidden');
+                errorMessage.classList.remove('hidden');
+            }
+
+            copyButton.addEventListener('click', () => {
+                generatedUrlInput.select();
+                // Using document.execCommand for compatibility in iFrames/sandboxed environments
                 try {
                     document.execCommand('copy');
-                    const originalContent = buttonElement.innerHTML;
-                    const isPrimary = buttonElement.classList.contains('bg-blue-600');
-                    
-                    buttonElement.innerHTML = `<span class="flex items-center justify-center gap-2">کپی شد!<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></span>`;
-                    buttonElement.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'bg-gray-600', 'hover:bg-gray-700');
-                    buttonElement.classList.add('bg-green-600');
-                    
+                    copyButton.textContent = 'Copied!';
+                    copyButton.classList.remove('bg-gray-600');
+                    copyButton.classList.add('bg-green-600');
                     setTimeout(() => {
-                        buttonElement.innerHTML = originalContent;
-                        buttonElement.classList.remove('bg-green-600');
-                        if (isPrimary) {
-                            buttonElement.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                        } else {
-                            buttonElement.classList.add('bg-gray-600', 'hover:bg-gray-700');
-                        }
+                        copyButton.textContent = 'Copy';
+                        copyButton.classList.remove('bg-green-600');
+                        copyButton.classList.add('bg-gray-600');
                     }, 2000);
                 } catch (err) {
-                    console.error('Fallback: Oops, unable to copy', err);
-                    displayMessage('error', 'خطا در کپی کردن لینک.');
+                    console.error('Failed to copy text: ', err);
                 }
-                document.body.removeChild(tempInput);
-            }
-
-            // --- UI Display Functions ---
-            function displayResult(videoId) {
-                const universalLink = `https://www.youtube.com/watch?v=${videoId}`;
-                const iosLink = `youtube://www.youtube.com/watch?v=${videoId}`;
-                const androidLink = `intent://www.youtube.com/watch?v=${videoId}#Intent;scheme=https;package=com.google.android.youtube;end;`;
-
-                messageArea.innerHTML = `
-                    <div class="space-y-5 animate-fade-in text-right">
-                        <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <h3 class="text-lg font-bold text-gray-800 dark:text-white">لینک عمومی (برای بیو)</h3>
-                                <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">پیشنهادی</span>
-                            </div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">این لینک بهترین گزینه برای اینستاگرام، وب‌سایت‌ها و اشتراک‌گذاری عمومی است.</p>
-                            <div class="relative">
-                                <input type="text" readonly value="${universalLink}" class="w-full bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-300 text-xs p-3 rounded-lg border border-gray-200 dark:border-gray-600 outline-none text-left" dir="ltr" />
-                            </div>
-                            <button data-link-to-copy="${universalLink}" class="copy-button mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-lg transition-all-smooth flex items-center justify-center gap-2">
-                                <span>کپی کردن لینک عمومی</span>
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                            </button>
-                        </div>
-                        <hr class="dark:border-gray-700"/>
-                        <div>
-                            <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-1">لینک‌های مستقیم (پیشرفته)</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">این لینک‌ها اپ یوتیوب را مستقیماً باز می‌کنند اما در همه جا (مانند بیو اینستاگرام) کار نمی‌کنند.</p>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <!-- iOS Link -->
-                                <div>
-                                     <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">مخصوص iOS</label>
-                                     <div class="relative">
-                                        <input type="text" readonly value="${iosLink}" class="w-full bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-300 text-xs p-3 rounded-lg border border-gray-200 dark:border-gray-600 outline-none text-left" dir="ltr" />
-                                     </div>
-                                     <button data-link-to-copy="${iosLink}" class="copy-button mt-2 w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-all-smooth flex items-center justify-center gap-2">
-                                        <span>کپی iOS</span>
-                                     </button>
-                                </div>
-                                <!-- Android Link -->
-                                 <div>
-                                     <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">مخصوص Android</label>
-                                     <div class="relative">
-                                        <input type="text" readonly value="${androidLink}" class="w-full bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-300 text-xs p-3 rounded-lg border border-gray-200 dark:border-gray-600 outline-none text-left" dir="ltr" />
-                                     </div>
-                                     <button data-link-to-copy="${androidLink}" class="copy-button mt-2 w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-all-smooth flex items-center justify-center gap-2">
-                                         <span>کپی Android</span>
-                                     </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                document.querySelectorAll('.copy-button').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const link = e.currentTarget.getAttribute('data-link-to-copy');
-                        copyToClipboard(link, e.currentTarget);
-                    });
-                });
-            }
-            
-            function displayMessage(type, message) {
-                 const colors = {
-                    error: 'text-red-500 dark:text-red-400',
-                    info: 'text-blue-500 dark:text-blue-400'
-                };
-                messageArea.innerHTML = `<p class="text-center font-medium ${colors[type]} animate-fade-in">${message}</p>`;
-            }
-
-            const style = document.createElement('style');
-            style.innerHTML = `
-                @keyframes animate-fade-in {
-                    from { opacity: 0; transform: translateY(10px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                .animate-fade-in {
-                    animation: animate-fade-in 0.4s ease-out forwards;
-                }
-            `;
-            document.head.appendChild(style);
+            });
         });
     </script>
+
 </body>
 </html>
-
