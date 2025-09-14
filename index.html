@@ -31,7 +31,7 @@
 </head>
 <body class="bg-gray-900 text-gray-200 antialiased">
 
-    <!-- Redirect Logic: This script checks if the page was loaded with a video ID and redirects. -->
+    <!-- Redirect Logic: This script checks the OS and tries to open the link in the YouTube app directly. -->
     <script>
         (function() {
             const params = new URLSearchParams(window.location.search);
@@ -39,13 +39,50 @@
             const channelId = params.get('c');
             const playlistId = params.get('p');
 
+            // If no ID is found, do nothing. The page will render the generator UI.
+            if (!videoId && !channelId && !playlistId) {
+                return;
+            }
+
+            const ua = navigator.userAgent;
+            const isIOS = /iPad|iPhone|iPod/.test(ua);
+            const isAndroid = /Android/.test(ua);
+
+            let webUrl = '';
+            let appUrl = '';
+            
+            // Construct the standard web URL and the app-specific URL
             if (videoId) {
-                // Attempt to open in app first, fallback to web
-                 window.location.href = `https://www.youtube.com/watch?v=${videoId}`;
+                webUrl = `https://www.youtube.com/watch?v=${videoId}`;
+                // This is a more reliable deep link for iOS videos
+                appUrl = `vnd.youtube:${videoId}`; 
             } else if (channelId) {
-                 window.location.href = `https://www.youtube.com/channel/${channelId}`;
+                webUrl = `https://www.youtube.com/channel/${channelId}`;
+                appUrl = `vnd.youtube://channel/${channelId}`;
             } else if (playlistId) {
-                 window.location.href = `https://www.youtube.com/playlist?list=${playlistId}`;
+                webUrl = `https://www.youtube.com/playlist?list=${playlistId}`;
+                appUrl = `vnd.youtube://playlist?list=${playlistId}`;
+            }
+            
+            if (isIOS) {
+                // For iOS, we attempt to open the app via the custom URL scheme.
+                window.location.href = appUrl;
+                
+                // If the app doesn't open, the user will stay on this page.
+                // After a short delay, we redirect them to the web URL as a fallback.
+                setTimeout(function () {
+                    window.location.href = webUrl;
+                }, 1500);
+
+            } else if (isAndroid) {
+                // For Android, the Intent URL is the most robust method.
+                // It tries to open the YouTube app and provides a fallback URL for the browser.
+                const intentUrl = `intent://${webUrl.substring(8)}#Intent;package=com.google.android.youtube;scheme=https;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+                window.location.href = intentUrl;
+
+            } else {
+                // For desktop or other mobile OS, just go to the standard web URL.
+                window.location.href = webUrl;
             }
         })();
     </script>
@@ -221,3 +258,4 @@
 
 </body>
 </html>
+
