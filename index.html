@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مبدل لینک یوتیوب</title>
+    
+    <!-- Tailwind CSS for a modern, responsive design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter for a clean, modern typeface -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS for further enhancements -->
+    <style>
+        /* Applying the Inter font and setting a smooth font-smoothing */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Styling for the input placeholder to match the RTL direction */
+        ::placeholder {
+            text-align: right;
+        }
+
+        /* Custom transition for a smoother visual feedback */
+        .transition-all-smooth {
+            transition: all 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 flex items-center justify-center min-h-screen transition-all-smooth">
+
+    <div class="w-full max-w-md mx-auto p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8 transition-all-smooth">
+            
+            <!-- Header section with YouTube logo -->
+            <div class="text-center mb-6">
+                <div class="flex justify-center items-center gap-3">
+                    <!-- YouTube SVG Icon -->
+                    <svg class="w-12 h-12 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M21.582,6.186c-0.23-0.86-0.908-1.538-1.768-1.768C18.254,4,12,4,12,4S5.746,4,4.186,4.418 c-0.86,0.23-1.538,0.908-1.768,1.768C2,7.746,2,12,2,12s0,4.254,0.418,5.814c0.23,0.86,0.908,1.538,1.768,1.768 C5.746,20,12,20,12,20s6.254,0,7.814-0.418c0.861-0.23,1.538-0.908,1.768-1.768C22,16.254,22,12,22,12S22,7.746,21.582,6.186z M10,15.464V8.536L16,12L10,15.464z"/>
+                    </svg>
+                    <h1 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">باز کردن در اپ یوتیوب</h1>
+                </div>
+                <p class="text-gray-500 dark:text-gray-400 mt-3">لینک یوتیوب را وارد کنید تا یک لینک مخصوص برای باز شدن در اپلیکیشن دریافت کنید.</p>
+            </div>
+
+            <!-- Input Form -->
+            <div class="space-y-4">
+                <div class="relative">
+                    <input type="url" id="youtubeLink" placeholder="...لینک یوتیوب را اینجا بچسبانید" class="w-full px-4 py-3 pr-12 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-2 border-transparent focus:border-red-500 focus:ring-0 rounded-xl outline-none transition-all-smooth text-left" dir="ltr">
+                    <button id="pasteButton" class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-red-500 transition-all-smooth" title="چسباندن از کلیپ‌بورد">
+                        <!-- Paste Icon -->
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7v4m-2-2h4"></path></svg>
+                    </button>
+                </div>
+                <button id="convertButton" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-xl transition-all-smooth focus:outline-none focus:ring-4 focus:ring-red-300 dark:focus:ring-red-800">
+                    تبدیل لینک
+                </button>
+            </div>
+
+            <!-- Result and Messaging Area -->
+            <div id="messageArea" class="mt-6 min-h-[80px]">
+                <!-- Dynamic content will be injected here -->
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Element Selection ---
+            const youtubeLinkInput = document.getElementById('youtubeLink');
+            const convertButton = document.getElementById('convertButton');
+            const pasteButton = document.getElementById('pasteButton');
+            const messageArea = document.getElementById('messageArea');
+
+            // --- Event Listeners ---
+            convertButton.addEventListener('click', handleConversion);
+            pasteButton.addEventListener('click', pasteFromClipboard);
+
+            // Allow submission by pressing Enter in the input field
+            youtubeLinkInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Prevent form submission if it's inside a <form>
+                    handleConversion();
+                }
+            });
+
+            // --- Core Functions ---
+            
+            /**
+             * Main function to handle the link conversion process.
+             */
+            function handleConversion() {
+                const youtubeLink = youtubeLinkInput.value.trim();
+
+                if (!youtubeLink) {
+                    displayMessage('error', 'لطفاً یک لینک یوتیوب وارد کنید.');
+                    return;
+                }
+                
+                // Regex to extract video ID from various YouTube URL formats
+                // Covers: youtu.be, /v/, /embed/, watch?v=, and shorts
+                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
+                const match = youtubeLink.match(regExp);
+
+                if (match && match[2].length === 11) {
+                    const videoId = match[2];
+                    // The intent URL is primarily for Android to force opening in the YouTube app.
+                    const appLink = `intent://www.youtube.com/watch?v=${videoId}#Intent;scheme=https;package=com.google.android.youtube;end;`;
+                    displayResult(appLink);
+                } else {
+                    displayMessage('error', 'لینک یوتیوب نامعتبر است. لطفاً دوباره تلاش کنید.');
+                }
+            }
+
+            /**
+             * Pastes text from the clipboard into the input field.
+             */
+            async function pasteFromClipboard() {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    youtubeLinkInput.value = text;
+                    youtubeLinkInput.focus();
+                } catch (err) {
+                    console.error('Failed to read clipboard contents: ', err);
+                    displayMessage('error', 'امکان دسترسی به کلیپ‌بورد وجود ندارد.');
+                }
+            }
+            
+            /**
+             * Copies the provided text to the clipboard and provides user feedback.
+             * Uses document.execCommand for broader compatibility.
+             * @param {string} textToCopy - The text to be copied.
+             * @param {HTMLElement} buttonElement - The button that triggered the copy action.
+             */
+            function copyToClipboard(textToCopy, buttonElement) {
+                const tempInput = document.createElement('textarea');
+                tempInput.value = textToCopy;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                
+                try {
+                    document.execCommand('copy');
+                    // Provide visual feedback
+                    const originalText = buttonElement.innerHTML;
+                    buttonElement.innerHTML = `
+                        <span class="flex items-center justify-center gap-2">
+                            کپی شد!
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </span>`;
+                    buttonElement.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    buttonElement.classList.add('bg-green-600');
+                    
+                    setTimeout(() => {
+                        buttonElement.innerHTML = originalText;
+                        buttonElement.classList.remove('bg-green-600');
+                        buttonElement.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    }, 2000);
+
+                } catch (err) {
+                    console.error('Fallback: Oops, unable to copy', err);
+                    displayMessage('error', 'خطا در کپی کردن لینک.');
+                }
+                
+                document.body.removeChild(tempInput);
+            }
+
+            // --- UI Display Functions ---
+
+            /**
+             * Displays the generated deep link result.
+             * @param {string} link - The generated app link.
+             */
+            function displayResult(link) {
+                messageArea.innerHTML = `
+                    <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-xl space-y-3 animate-fade-in">
+                        <p class="text-sm text-gray-600 dark:text-gray-300 text-center">لینک جدید شما آماده است:</p>
+                        <div class="relative">
+                            <input type="text" readonly value="${link}" class="w-full bg-white dark:bg-gray-600 text-gray-500 dark:text-gray-300 text-xs p-2 rounded-lg border-none outline-none text-left" dir="ltr" />
+                        </div>
+                        <button id="copyButton" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-lg transition-all-smooth focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800">
+                           <span class="flex items-center justify-center gap-2">
+                                کپی کردن لینک
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            </span>
+                        </button>
+                    </div>
+                `;
+                
+                const copyButton = document.getElementById('copyButton');
+                copyButton.addEventListener('click', () => copyToClipboard(link, copyButton));
+            }
+            
+            /**
+             * Displays an error or info message to the user.
+             * @param {'error' | 'info'} type - The type of message.
+             * @param {string} message - The message content.
+             */
+            function displayMessage(type, message) {
+                 const colors = {
+                    error: 'text-red-500 dark:text-red-400',
+                    info: 'text-blue-500 dark:text-blue-400'
+                };
+                messageArea.innerHTML = `<p class="text-center font-medium ${colors[type]} animate-fade-in">${message}</p>`;
+            }
+
+            // Simple fade-in animation for messages
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @keyframes animate-fade-in {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fade-in {
+                    animation: animate-fade-in 0.4s ease-out forwards;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>
