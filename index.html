@@ -16,189 +16,206 @@
             background: linear-gradient(90deg, #4f46e5, #ec4899);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
-        .fade-in {
-            animation: fadeIn 0.6s ease-out;
+        .gradient-border-button {
+            background-image: linear-gradient(to right, #4338ca, #be185d), linear-gradient(to right, #4338ca, #be185d);
+            background-size: 100% 2px, 100% 2px;
+            background-position: 0 100%, 0 0;
+            background-repeat: no-repeat;
+            transition: all 0.3s;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .hover-scale {
-            transition: transform 0.2s ease-in-out;
-        }
-        .hover-scale:hover {
-            transform: scale(1.02);
-        }
-        .input-focus {
-            transition: all 0.2s ease-in-out;
-        }
-        .input-focus:focus {
-            transform: translateX(-2px);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        .gradient-border-button:hover {
+            background-size: 0 2px, 100% 2px;
         }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-200 antialiased min-h-screen">
+<body class="bg-gray-900 text-gray-200 antialiased">
 
-    <!-- Redirect Logic: Enhanced with correct deep link schemes -->
+    <!-- Redirect Logic: This script checks the OS and tries to open the link in the YouTube app directly. -->
     <script>
-        (function() {
+        function masterRedirect() {
             const params = new URLSearchParams(window.location.search);
             const videoId = params.get('v');
             const channelId = params.get('c');
             const playlistId = params.get('p');
 
-            // If no ID is found, render the UI
+            // If no ID is found, do nothing. The page will render the generator UI.
             if (!videoId && !channelId && !playlistId) {
                 return;
             }
-
-            const ua = navigator.userAgent;
-            const isIOS = /iPad|iPhone|iPod/.test(ua);
-            const isAndroid = /Android/.test(ua);
-
-            let webUrl = '';
             
-            // Construct the standard web URL
+            let regularUrl = '';
+            let iosAppUrl = '';
+            let androidAppUrl = '';
+
             if (videoId) {
-                webUrl = `https://www.youtube.com/watch?v=${videoId}`;
+                regularUrl = `https://www.youtube.com/watch?v=${videoId}`;
+                iosAppUrl = `vnd.youtube://www.youtube.com/watch?v=${videoId}`;
+                androidAppUrl = `intent://www.youtube.com/watch?v=${videoId}#Intent;package=com.google.android.youtube;scheme=https;end`;
             } else if (channelId) {
-                let channelPath = channelId.startsWith('UC') ? `channel/${channelId}` : `@${channelId}`;
-                webUrl = `https://www.youtube.com/${channelPath}`;
+                regularUrl = `https://www.youtube.com/channel/${channelId}`;
+                iosAppUrl = `vnd.youtube://www.youtube.com/channel/${channelId}`;
+                androidAppUrl = `intent://www.youtube.com/channel/${channelId}#Intent;package=com.google.android.youtube;scheme=https;end`;
             } else if (playlistId) {
-                webUrl = `https://www.youtube.com/playlist?list=${playlistId}`;
+                regularUrl = `https://www.youtube.com/playlist?list=${playlistId}`;
+                iosAppUrl = `vnd.youtube://www.youtube.com/playlist?list=${playlistId}`;
+                androidAppUrl = `intent://www.youtube.com/playlist?list=${playlistId}#Intent;package=com.google.android.youtube;scheme=https;end`;
             }
-            
-            if (isIOS) {
-                // Correct iOS deep link scheme: youtube://www.youtube.com/path
-                const appUrl = webUrl.replace('https://www.youtube.com', 'youtube://www.youtube');
-                window.location.href = appUrl;
-                
-                // Fallback to web after 2.5 seconds if app doesn't open
-                setTimeout(() => {
-                    window.location.href = webUrl;
-                }, 2500);
 
-            } else if (isAndroid) {
-                // Android Intent URL with fallback
-                const hostPath = webUrl.substring(8); // Remove 'https://'
-                const intentUrl = `intent://${hostPath}#Intent;package=com.google.android.youtube;scheme=https;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
-                window.location.href = intentUrl;
-
-            } else {
-                // Desktop or other: direct to web
-                window.location.href = webUrl;
+            function detectDevice() {
+                var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+                if (/android/i.test(userAgent)) return 'android';
+                if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) return 'ios';
+                return 'desktop';
             }
-        })();
+
+            function isSafari() {
+                var userAgent = navigator.userAgent;
+                return /safari/i.test(userAgent) && !/CriOS|FxiOS/i.test(userAgent);
+            }
+
+            function isMobileSafari() {
+                var userAgent = navigator.userAgent;
+                return /iPad|iPhone|iPod/.test(userAgent) && /Safari/i.test(userAgent) && !/CriOS|FxiOS/i.test(userAgent);
+            }
+
+            function isMobileBrowser() {
+                var userAgent = navigator.userAgent;
+                return /CriOS|FxiOS|chrome.*mobile|firefox.*mobile|opera.*mobile/i.test(userAgent) || isMobileSafari();
+            }
+
+            function isFbBrowser() {
+                var userAgent = navigator.userAgent;
+                return /FBAN|FBAV/i.test(userAgent);
+            }
+
+            function isChromeMob() {
+                var userAgent = navigator.userAgent;
+                return /CriOS/i.test(userAgent);
+            }
+
+            function redirect() {
+                var device = detectDevice();
+                var redirectUrl;
+                var simpleRedirect = false;
+                var isFbMios = /FBCR/i.test(navigator.userAgent) && /iPhone/i.test(navigator.userAgent);
+
+                if (device === 'ios') {
+                    redirectUrl = iosAppUrl;
+                } else if (device === 'android') {
+                    redirectUrl = androidAppUrl;
+                } else {
+                    redirectUrl = regularUrl;
+                }
+
+                if (isFbMios) {
+                    redirectUrl = regularUrl;
+                    simpleRedirect = true;
+                }
+
+                function performRedirect() {
+                    if (device === 'desktop') {
+                        window.location.replace(redirectUrl);
+                    } else {
+                        var timeoutId, timeoutId2, timeoutId3;
+
+                        function tryOpenApp() {
+                            window.location = redirectUrl;
+
+                            if (!simpleRedirect) {
+                                if (!isMobileBrowser() && (!isFbBrowser() || (isFbBrowser() && device === 'android')) || !isMobileSafari()) {
+                                    timeoutId = setTimeout(function() { window.location = `googlechrome://${regularUrl.substring(8)}`; }, 500);
+                                }
+                                if (!isMobileBrowser() && !isChromeMob() && !isSafari() && !isMobileSafari() && device === 'ios' || !isMobileSafari()) {
+                                    timeoutId2 = setTimeout(function() { window.location = `x-safari-https://${regularUrl.substring(8)}`; }, 800);
+                                }
+                                timeoutId3 = setTimeout(function() { window.location = regularUrl; }, 1100);
+                            }
+                        }
+                        tryOpenApp();
+                    }
+                }
+                performRedirect();
+            }
+            redirect();
+        }
+
+        if (document.readyState === 'complete') {
+            masterRedirect();
+        } else {
+            window.addEventListener('load', masterRedirect);
+        }
     </script>
 
     <div class="container mx-auto px-4 py-8 md:py-16">
-        <!-- Header with fade-in animation -->
-        <header class="text-center mb-12 md:mb-20 fade-in">
-            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-4 leading-tight">
-                کاری کنید لینک‌های یوتیوب <span class="gradient-text block">در اپلیکیشن باز شوند</span>
+
+        <!-- Header -->
+        <header class="text-center mb-12 md:mb-20">
+            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-4">
+                کاری کنید لینک‌های یوتیوب <span class="gradient-text">در اپلیکیشن باز شوند</span>
             </h1>
-            <p class="text-lg md:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
+            <p class="text-lg md:text-xl text-gray-400 max-w-3xl mx-auto">
                 تعامل کاربران را از دست ندهید. لینک‌های یوتیوب خود را طوری تبدیل کنید که مستقیماً در اپلیکیشن باز شوند، جایی که کاربران وارد حساب خود شده و آماده لایک، کامنت و سابسکرایب هستند.
             </p>
         </header>
 
-        <!-- Enhanced Link Generator with loading state -->
-        <main class="max-w-2xl mx-auto bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-gray-700 shadow-2xl shadow-indigo-500/10 fade-in" style="animation-delay: 0.2s;">
-            <form id="link-form" class="space-y-4">
-                <label for="youtube-url" class="block text-sm font-medium text-gray-300">
-                    آدرس ویدیو، کانال یا لیست پخش یوتیوب خود را وارد کنید
-                </label>
+        <!-- Link Generator -->
+        <main class="max-w-2xl mx-auto bg-gray-800/50 rounded-2xl p-6 md:p-8 border border-gray-700 shadow-2xl shadow-indigo-500/10">
+            <form id="link-form">
+                <label for="youtube-url" class="block text-sm font-medium text-gray-300 mb-2">آدرس ویدیو، کانال یا لیست پخش یوتیوب خود را وارد کنید</label>
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <input 
-                        type="url" 
-                        id="youtube-url" 
-                        name="youtube-url" 
-                        required 
-                        placeholder="https://www.youtube.com/watch?v=..." 
-                        class="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-left input-focus dir-ltr" 
-                        aria-describedby="url-help"
-                        dir="ltr"
-                    >
-                    <button 
-                        type="submit" 
-                        id="submit-btn"
-                        class="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-800 disabled:cursor-not-allowed text-white font-semibold px-6 py-3 rounded-lg transition-all whitespace-nowrap hover-scale flex items-center justify-center gap-2"
-                        aria-label="ایجاد لینک جدید"
-                    >
-                        <span id="submit-text">ایجاد لینک</span>
-                        <svg class="w-4 h-4 animate-spin hidden" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
+                    <input type="url" id="youtube-url" name="youtube-url" required placeholder="https://www.youtube.com/watch?v=..." class="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none text-left" dir="ltr">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors whitespace-nowrap">
+                        ایجاد لینک
                     </button>
                 </div>
-                <p id="url-help" class="text-xs text-gray-500 mt-1">مثال: https://www.youtube.com/watch?v=dQw4w9WgXcQ یا https://www.youtube.com/@channelname</p>
             </form>
 
-            <!-- Result Display with enhanced copy feedback -->
-            <div id="result" class="mt-6 hidden space-y-3 fade-in" style="animation-delay: 0.4s;">
-                <label for="generated-url" class="block text-sm font-medium text-gray-300">
-                    لینک جدید شما (کلیک کنید تا کپی شود):
-                </label>
+            <!-- Result Display -->
+            <div id="result" class="mt-6 hidden">
+                <label for="generated-url" class="block text-sm font-medium text-gray-300 mb-2">لینک جدید شما:</label>
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <input 
-                        type="text" 
-                        id="generated-url" 
-                        readonly 
-                        class="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg text-green-400 font-mono text-left cursor-pointer hover:bg-gray-800 transition-colors dir-ltr" 
-                        dir="ltr"
-                        aria-label="لینک تولید شده"
-                    >
-                    <button 
-                        id="copy-button" 
-                        class="bg-gray-600 hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg transition-all whitespace-nowrap hover-scale"
-                        aria-label="کپی لینک"
-                    >
+                    <input type="text" id="generated-url" readonly class="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg text-green-400 font-mono text-left" dir="ltr">
+                    <button id="copy-button" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors whitespace-nowrap">
                         کپی
                     </button>
                 </div>
             </div>
             
-            <!-- Enhanced Error Message -->
-            <div id="error-message" class="mt-4 p-4 bg-red-900/20 border border-red-700/50 rounded-lg text-red-400 text-center hidden fade-in">
-                <div class="flex items-center justify-center gap-2">
-                    <span>❌</span>
-                    <span>آدرس یوتیوب نامعتبر است. لطفاً بررسی کرده و دوباره تلاش کنید.</span>
-                </div>
+            <!-- Error Message -->
+            <div id="error-message" class="mt-4 text-red-400 text-center hidden">
+                آدرس یوتیوب نامعتبر است. لطفاً بررسی کرده و دوباره تلاش کنید.
             </div>
         </main>
 
-        <!-- How it works - with staggered animations -->
-        <section class="mt-20 md:mt-28 text-center fade-in" style="animation-delay: 0.3s;">
-            <h2 class="text-3xl font-bold mb-10 gradient-text">چطور کار می‌کند</h2>
+        <!-- How it works -->
+        <section class="mt-20 md:mt-28 text-center">
+            <h2 class="text-3xl font-bold mb-10">چطور کار می‌کند</h2>
             <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                <div class="bg-gray-800/30 p-6 rounded-xl border border-gray-700 hover:border-indigo-500/50 transition-all hover-scale group">
+                <div class="bg-gray-800/30 p-6 rounded-xl border border-gray-700">
                     <div class="text-indigo-400 text-4xl font-black mb-4">۱</div>
                     <h3 class="text-xl font-semibold mb-2">لینک خود را وارد کنید</h3>
-                    <p class="text-gray-400 group-hover:text-gray-300 transition-colors">آدرس هر ویدیو، کانال یا لیست پخش یوتیوب را کپی کرده و در بالا قرار دهید.</p>
+                    <p class="text-gray-400">آدرس هر ویدیو، کانال یا لیست پخش یوتیوب را کپی کرده و در بالا قرار دهید.</p>
                 </div>
-                <div class="bg-gray-800/30 p-6 rounded-xl border border-gray-700 hover:border-indigo-500/50 transition-all hover-scale group" style="animation-delay: 0.1s;">
+                <div class="bg-gray-800/30 p-6 rounded-xl border border-gray-700">
                     <div class="text-indigo-400 text-4xl font-black mb-4">۲</div>
                     <h3 class="text-xl font-semibold mb-2">لینک جدیدتان را بگیرید</h3>
-                    <p class="text-gray-400 group-hover:text-gray-300 transition-colors">ما یک آدرس ویژه تولید می‌کنیم که منطق باز کردن اپ یوتیوب را در خود دارد.</p>
+                    <p class="text-gray-400">ما یک آدرس ویژه تولید می‌کنیم که منطق باز کردن اپ یوتیوب را در خود دارد.</p>
                 </div>
-                <div class="bg-gray-800/30 p-6 rounded-xl border border-gray-700 hover:border-indigo-500/50 transition-all hover-scale group" style="animation-delay: 0.2s;">
+                <div class="bg-gray-800/30 p-6 rounded-xl border border-gray-700">
                     <div class="text-indigo-400 text-4xl font-black mb-4">۳</div>
                     <h3 class="text-xl font-semibold mb-2">به اشتراک بگذارید</h3>
-                    <p class="text-gray-400 group-hover:text-gray-300 transition-colors">از این لینک جدید در اینستاگرام، فیسبوک و غیره استفاده کنید و رشد تعامل را ببینید.</p>
+                    <p class="text-gray-400">از این لینک جدید در اینستاگرام، فیسبوک و غیره استفاده کنید و رشد تعامل را ببینید.</p>
                 </div>
             </div>
         </section>
 
-        <!-- Problem vs Solution - Enhanced contrast -->
-        <section class="mt-20 md:mt-28 max-w-5xl mx-auto fade-in" style="animation-delay: 0.5s;">
+        <!-- The Problem vs Solution -->
+        <section class="mt-20 md:mt-28 max-w-5xl mx-auto">
             <h2 class="text-3xl font-bold text-center mb-10">مشکلی که حل می‌کنید</h2>
             <div class="grid md:grid-cols-2 gap-8">
-                <div class="bg-red-900/20 border border-red-700/50 p-6 rounded-xl hover:border-red-500/50 transition-all">
-                    <h3 class="text-2xl font-bold mb-4 text-red-300">لینک‌های معمولی</h3>
+                <div class="bg-red-900/20 border border-red-700/50 p-6 rounded-xl">
+                    <h3 class="text-2xl font-bold mb-4">لینک‌های معمولی</h3>
                     <ul class="space-y-3 text-gray-300">
                         <li class="flex items-start"><span class="text-red-400 ml-3 mt-1">❌</span> در یک مرورگر داخلی کند باز می‌شود.</li>
                         <li class="flex items-start"><span class="text-red-400 ml-3 mt-1">❌</span> کاربران وارد حساب خود نشده‌اند.</li>
@@ -206,8 +223,8 @@
                         <li class="flex items-start"><span class="text-red-400 ml-3 mt-1">❌</span> از دست رفتن تعامل و زمان تماشا.</li>
                     </ul>
                 </div>
-                <div class="bg-green-900/20 border border-green-700/50 p-6 rounded-xl hover:border-green-500/50 transition-all">
-                    <h3 class="text-2xl font-bold mb-4 text-green-300">با این ابزار</h3>
+                <div class="bg-green-900/20 border border-green-700/50 p-6 rounded-xl">
+                    <h3 class="text-2xl font-bold mb-4">با این ابزار</h3>
                     <ul class="space-y-3 text-gray-300">
                         <li class="flex items-start"><span class="text-green-400 ml-3 mt-1">✔️</span> مستقیماً در اپلیکیشن یوتیوب باز می‌شود.</li>
                         <li class="flex items-start"><span class="text-green-400 ml-3 mt-1">✔️</span> کاربران از قبل وارد حساب خود شده‌اند.</li>
@@ -218,48 +235,29 @@
             </div>
         </section>
 
-        <!-- Enhanced Footer -->
-        <footer class="text-center mt-20 md:mt-28 text-gray-500 fade-in" style="animation-delay: 0.6s;">
-            <p>
-                ساخته شده برای <a href="https://github.com/farzamify/InApp" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-400 transition-colors font-medium">Farzamify/InApp</a>
-                <span class="mx-2">•</span>
-                <a href="https://github.com/farzamify/InApp" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-400 transition-colors">⭐ ستاره بزنید</a>
-            </p>
+        <!-- Footer -->
+        <footer class="text-center mt-20 md:mt-28 text-gray-500">
+             <p>ساخته شده توسط <a href="https://github.com/farzamify/InApp" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-400">Farzamify/InApp</a></p>
         </footer>
+
     </div>
 
-    <!-- Optimized Main Logic Script -->
+    <!-- Main Logic Script -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('link-form');
             const youtubeUrlInput = document.getElementById('youtube-url');
-            const submitBtn = document.getElementById('submit-btn');
-            const submitText = document.getElementById('submit-text');
-            const spinner = submitBtn.querySelector('svg');
             const resultDiv = document.getElementById('result');
             const generatedUrlInput = document.getElementById('generated-url');
             const copyButton = document.getElementById('copy-button');
             const errorMessage = document.getElementById('error-message');
 
-            // Enhanced regex to support /@handle
-            const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([^"&?\/ ]{11})|youtube\.com\/(?:channel\/|c\/|@)([^"&?\/ ]+)|youtube\.com\/playlist\?list=([^"&?\/ ]+)/;
-
-            form.addEventListener('submit', async (e) => {
+            form.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const url = youtubeUrlInput.value.trim();
                 
-                if (!url) return;
-
-                // Show loading
-                submitBtn.disabled = true;
-                submitText.textContent = 'در حال پردازش...';
-                spinner.classList.remove('hidden');
-                errorMessage.classList.add('hidden');
-                resultDiv.classList.add('hidden');
-
-                // Simulate brief processing (optional, remove if not needed)
-                await new Promise(resolve => setTimeout(resolve, 500));
-
+                // Regex to extract video, channel, or playlist ID from various YouTube URL formats
+                const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([^"&?\/ ]{11})|youtube\.com\/(?:channel\/|c\/)([^"&?\/ ]+)|youtube\.com\/playlist\?list=([^"&?\/ ]+)/;
                 const match = url.match(youtubeRegex);
 
                 if (match) {
@@ -278,77 +276,41 @@
                         newUrl = `${baseUrl}?p=${playlistId}`;
                     } else {
                         showError();
-                        resetForm();
                         return;
                     }
 
                     generatedUrlInput.value = newUrl;
-                    generatedUrlInput.focus(); // Accessibility: focus for screen readers
                     resultDiv.classList.remove('hidden');
+                    errorMessage.classList.add('hidden');
+                    copyButton.textContent = 'کپی';
+                    copyButton.classList.remove('bg-green-600');
+                    copyButton.classList.add('bg-gray-600');
+
                 } else {
                     showError();
                 }
-
-                resetForm();
             });
             
             function showError() {
                 resultDiv.classList.add('hidden');
                 errorMessage.classList.remove('hidden');
-                youtubeUrlInput.focus(); // Refocus input for retry
             }
 
-            function resetForm() {
-                submitBtn.disabled = false;
-                submitText.textContent = 'ایجاد لینک';
-                spinner.classList.add('hidden');
-            }
-
-            // Modern clipboard API with fallback
-            copyButton.addEventListener('click', async () => {
-                if (!generatedUrlInput.value) return;
-
+            copyButton.addEventListener('click', () => {
+                generatedUrlInput.select();
+                // Using document.execCommand for compatibility in iFrames/sandboxed environments
                 try {
-                    await navigator.clipboard.writeText(generatedUrlInput.value);
-                    feedbackSuccess();
+                    document.execCommand('copy');
+                    copyButton.textContent = 'کپی شد!';
+                    copyButton.classList.remove('bg-gray-600');
+                    copyButton.classList.add('bg-green-600');
+                    setTimeout(() => {
+                        copyButton.textContent = 'کپی';
+                        copyButton.classList.remove('bg-green-600');
+                        copyButton.classList.add('bg-gray-600');
+                    }, 2000);
                 } catch (err) {
-                    // Fallback to execCommand
-                    generatedUrlInput.select();
-                    generatedUrlInput.setSelectionRange(0, 99999); // For mobile
-                    try {
-                        document.execCommand('copy');
-                        feedbackSuccess();
-                    } catch (fallbackErr) {
-                        console.error('Copy failed:', fallbackErr);
-                        // Optional: alert or toast
-                        alert('کپی ناموفق بود. لطفاً دستی کپی کنید.');
-                    }
-                }
-            });
-
-            function feedbackSuccess() {
-                const originalText = copyButton.textContent;
-                copyButton.textContent = 'کپی شد! ✅';
-                copyButton.classList.add('bg-green-600');
-                copyButton.classList.remove('bg-gray-600', 'hover:bg-gray-700');
-                copyButton.classList.add('hover:bg-green-700');
-
-                setTimeout(() => {
-                    copyButton.textContent = originalText;
-                    copyButton.classList.remove('bg-green-600', 'hover:bg-green-700');
-                    copyButton.classList.add('bg-gray-600', 'hover:bg-gray-700');
-                }, 2000);
-            }
-
-            // Click to copy on input
-            generatedUrlInput.addEventListener('click', () => {
-                copyButton.click();
-            });
-
-            // Keyboard shortcut for form
-            youtubeUrlInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !youtubeUrlInput.value.trim()) {
-                    e.preventDefault();
+                    console.error('Failed to copy text: ', err);
                 }
             });
         });
@@ -356,3 +318,4 @@
 
 </body>
 </html>
+
